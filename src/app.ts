@@ -16,6 +16,7 @@ import {
   addTechnologieToProject,
   createProject,
   deleteProject,
+  deleteTechnology,
   getProjectById,
   updateProject,
 } from "./logics/projects.logics";
@@ -23,6 +24,7 @@ import {
   checkDeveloperIdExists,
   checkIdProjectExists,
   checkTechnologyName,
+  checkTechnologyNameByUrl,
 } from "./middlewares/projects.middlewares";
 
 const app: Application = express();
@@ -54,6 +56,11 @@ app.post(
   checkTechnologyName,
   addTechnologieToProject
 );
-app.delete("/projects/:id/technologies/:name");
+app.delete(
+  "/projects/:id/technologies/:name",
+  checkIdProjectExists,
+  checkTechnologyNameByUrl,
+  deleteTechnology
+);
 
 export default app;

@@ -75,7 +75,7 @@ const getProjectById = async (
 
   const queryResult: QueryResult = await client.query(queryConfig);
 
-  return response.status(200).json(queryResult.rows[0]);
+  return response.status(200).json(queryResult.rows);
 };
 
 const updateProject = async (
@@ -103,7 +103,7 @@ const updateProject = async (
 
   const queryResult: QueryResult<IProject> = await client.query(queryConfig);
 
-  return response.status(200).json(queryResult.rows);
+  return response.status(200).json(queryResult.rows[0]);
 };
 
 const deleteProject = async (
@@ -133,6 +133,21 @@ const addTechnologieToProject = async (
 ): Promise<Response> => {
   const id: number = parseInt(request.params.id);
   const techId: number = response.locals.techId;
+
+  // Verificando se a tecnologia já existe no projeto
+  const checkExistingQuery = `
+    SELECT * FROM projects_technologies 
+    WHERE "projectId" = $1 AND "technologyId" = $2
+  `;
+  const checkExistingResult = await client.query(checkExistingQuery, [
+    id,
+    techId,
+  ]);
+  if (checkExistingResult.rowCount > 0) {
+    return response.status(409).json({
+      message: "This technology is already associated with the project",
+    });
+  }
 
   const data = {
     addedIn: new Date(),
@@ -182,10 +197,40 @@ const addTechnologieToProject = async (
   return response.status(201).json(selectQueryResult.rows[0]);
 };
 
+const deleteTechnology = async (
+  request: Request,
+  response: Response
+): Promise<Response> => {
+  const projectId: number = parseInt(request.params.id);
+  const techId: number = response.locals.techIdByUrl;
+
+  const checkTechProjectQuery = `
+    SELECT * FROM projects_technologies
+    WHERE "technologyId" = $1
+`;
+
+  // Aqui eu checo se a tecnologia está assciada a algum projeto
+  const checkTechProjectResult = await client.query(checkTechProjectQuery, [
+    techId,
+  ]);
+
+  if (checkTechProjectResult.rowCount === 0) {
+    return response.status(400).json({
+      message: "Technology not related to the project.",
+    });
+  }
+
+  const deleteQuery = `DELETE FROM projects_technologies WHERE "projectId" = $1 AND "technologyId" = $2`;
+  const deleteResult = await client.query(deleteQuery, [projectId, techId]);
+
+  return response.status(204).send();
+};
+
 export {
   createProject,
   updateProject,
   deleteProject,
   getProjectById,
   addTechnologieToProject,
+  deleteTechnology,
 };

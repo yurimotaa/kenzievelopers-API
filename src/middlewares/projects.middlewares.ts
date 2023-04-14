@@ -103,4 +103,46 @@ const checkTechnologyName = async (
   return next();
 };
 
-export { checkDeveloperIdExists, checkIdProjectExists, checkTechnologyName };
+const checkTechnologyNameByUrl = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<Response | void> => {
+  const techName: string = request.params.name;
+
+  const queryString: string = `
+    SELECT id
+    FROM technologies
+    WHERE name = $1
+  `;
+
+  const queryResult: QueryResult = await client.query(queryString, [techName]);
+
+  if (queryResult.rowCount === 0) {
+    return response.status(400).json({
+      message: "Technology not supported.",
+      options: [
+        "JavaScript",
+        "Python",
+        "React",
+        "Express.js",
+        "HTML",
+        "CSS",
+        "Django",
+        "PostgreSQL",
+        "MongoDB",
+      ],
+    });
+  }
+
+  response.locals.techIdByUrl = queryResult.rows[0].id;
+
+  return next();
+};
+
+export {
+  checkDeveloperIdExists,
+  checkIdProjectExists,
+  checkTechnologyName,
+  checkTechnologyNameByUrl,
+};

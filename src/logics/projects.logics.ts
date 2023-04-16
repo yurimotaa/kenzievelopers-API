@@ -209,7 +209,7 @@ const deleteTechnology = async (
     WHERE "technologyId" = $1
 `;
 
-  // Aqui eu checo se a tecnologia está assciada a algum projeto
+  // Aqui eu checo se a tecnologia está associada a algum projeto
   const checkTechProjectResult = await client.query(checkTechProjectQuery, [
     techId,
   ]);

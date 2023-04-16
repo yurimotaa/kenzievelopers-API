@@ -4,6 +4,8 @@ create table if not exists developers (
 	"email" VARCHAR(50) not NULL
 );
 
+/* CREATE TYPE OS AS ENUM ('Windows', 'Linux', 'MacOS'); */
+
 CREATE TABLE IF NOT EXISTS developer_infos (
     "id" SERIAL PRIMARY KEY,
     "developerSince" DATE NOT NULL,
